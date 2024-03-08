@@ -3,6 +3,8 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -39,17 +42,31 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
+  public Optional<User> getUser(Long userId) {
+    return this.userRepository.findById(userId);
+  }
+
   public User createUser(User newUser) {
+
+    // Set the token for the user
     newUser.setToken(UUID.randomUUID().toString());
+
+    // Set the status for the user
     newUser.setStatus(UserStatus.OFFLINE);
+
+    // check if the user already exists in the database
     checkIfUserExists(newUser);
-    // saves the given entity but data is only persisted in the database once
-    // flush() is called
+
+    // Save the user to the database
     newUser = userRepository.save(newUser);
+
+    // flush() is used to write the changes to the database
     userRepository.flush();
 
     log.debug("Created Information for User: {}", newUser);
+
     return newUser;
+    
   }
 
   /**
@@ -74,6 +91,48 @@ public class UserService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
     } else if (userByName != null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "name", "is"));
+    }
+  }
+
+  // Validate the username and password.
+  // Returns: If user exist and password is correct. 
+  public User validateUser(UserPostDTO user) {
+
+    // Get the user information from teh DB by user name
+    User userByUsername = userRepository.findByUsername(user.getUsername());
+
+    //If user not found, return false
+    if (userByUsername == null) return null;
+
+    // Validate if the user 
+    if (userByUsername.getPassword().equals(user.getPassword()) ) {
+      return userByUsername;
+    }
+
+    return null;
+
+  }
+
+  public User updateUser(User user) {
+    Optional<User> existingUser = userRepository.findById(user.getId());
+
+    if (existingUser.isPresent()) {
+      User userToUpdate = existingUser.get();
+      userToUpdate.setUsername(user.getUsername());
+      userToUpdate.setBirthday(user.getBirthday());
+      System.out.println("User to update: " + userToUpdate.getId());
+      System.out.println("User to update: " + userToUpdate.getUsername());
+      System.out.println("User to update: " + userToUpdate.getBirthday());
+
+      // Update fields of userToUpdate with values from user
+      // For example, if User has a name field that can be updated:
+      // userToUpdate.setName(user.getName());
+
+      return userRepository.save(userToUpdate);
+    } else {
+      // Handle case where user doesn't exist in the database
+      // You could throw an exception, return null, or return a default User object
+      return null;
     }
   }
 }
