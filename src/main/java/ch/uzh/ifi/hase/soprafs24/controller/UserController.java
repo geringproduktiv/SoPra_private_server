@@ -59,7 +59,7 @@ public class UserController {
   @PutMapping("/users/{userId}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public UserPutDTO updateUser(@RequestBody UserPutDTO userPutDTO, @PathVariable Long userId) {
+  public UserPutDTO updateUser(@RequestBody UserPutDTO userPutDTO) {
     System.out.println("User to update: " + userPutDTO.getBirthday());
     System.out.println("User to update: " + userPutDTO.getId());
     // convert API user to internal representation
