@@ -50,18 +50,16 @@ public class UserController {
   public UserGetDTO getUser(@PathVariable Long userId) {
 
     // fetch the user in the internal representation
-    Optional<User> user = userService.getUser(userId);
+    User user = userService.getUser(userId);
 
     // convert user to the API representation
-    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user.get());
+    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
   }
 
   @PutMapping("/users/{userId}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public UserPutDTO updateUser(@RequestBody UserPutDTO userPutDTO) {
-    System.out.println("User to update: " + userPutDTO.getBirthday());
-    System.out.println("User to update: " + userPutDTO.getId());
     // convert API user to internal representation
     User userInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
 

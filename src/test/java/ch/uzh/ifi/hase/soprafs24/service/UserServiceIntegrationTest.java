@@ -13,6 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Optional;
+
 /**
  * Test class for the UserResource REST resource.
  *
@@ -34,6 +36,7 @@ public class UserServiceIntegrationTest {
     userRepository.deleteAll();
   }
 
+  // POST success
   @Test
   public void createUser_validInputs_success() {
     // given
@@ -54,6 +57,7 @@ public class UserServiceIntegrationTest {
     assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
   }
 
+  // POST failure
   @Test
   public void createUser_duplicateUsername_throwsException() {
     assertNull(userRepository.findByUsername("testUsername"));
@@ -72,5 +76,65 @@ public class UserServiceIntegrationTest {
 
     // check that an error is thrown
     assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser2));
+  }
+
+  // GET success
+  @Test
+  public void getUser_validInput_success() {
+    assertNull(userRepository.findByUsername("testUsername"));
+
+    User testUser = new User();
+    testUser.setName("testName");
+    testUser.setUsername("testUsername");
+    User createdUser = userService.createUser(testUser);
+
+    Optional<User> foundUser = userRepository.findById(createdUser.getId());
+    if (foundUser.isPresent()) {
+      User user = foundUser.get();
+
+      assertTrue(foundUser.isPresent());
+      assertEquals(createdUser.getId(), user.getId());
+      assertEquals(createdUser.getName(), user.getName());
+      assertEquals(createdUser.getUsername(), user.getUsername());
+    } else {
+      fail("User not found");
+    }
+  }
+
+  // GET failure
+  @Test
+  public void getUser_inexistentId_throwsException() {
+    assertTrue(userRepository.findById(1L).isEmpty());
+
+    assertThrows(ResponseStatusException.class, () -> userService.getUser(1L));
+  }
+
+  // PUT success
+  @Test
+  public void updateUser_validInput_success() {
+    assertNull(userRepository.findByUsername("testUsername"));
+
+    User testUser = new User();
+    testUser.setUsername("testUsername");
+    User createdUser = userService.createUser(testUser);
+
+    createdUser.setUsername("newUsername");
+    User updatedUser = userService.updateUser(createdUser);
+
+    assertEquals(createdUser.getId(), updatedUser.getId());
+    assertEquals(createdUser.getUsername(), updatedUser.getUsername());
+  }
+
+  // PUT failure
+  @Test
+  public void updateUser_inexistentId_throwsException() {
+    assertTrue(userRepository.findById(1L).isEmpty());
+
+    User testUser = new User();
+    testUser.setId(1L);
+    testUser.setName("testName");
+    testUser.setUsername("testUsername");
+
+    assertThrows(ResponseStatusException.class, () -> userService.updateUser(testUser));
   }
 }

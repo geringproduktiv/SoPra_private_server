@@ -42,8 +42,15 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
-  public Optional<User> getUser(Long userId) {
-    return this.userRepository.findById(userId);
+  public User getUser(Long userId) {
+    Optional<User> foundUser = this.userRepository.findById(userId);
+
+    if (foundUser.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    } else {
+      User user = foundUser.get();
+      return user;
+    }
   }
 
   public User createUser(User newUser) {
@@ -62,8 +69,6 @@ public class UserService {
 
     // flush() is used to write the changes to the database
     userRepository.flush();
-
-    log.debug("Created Information for User: {}", newUser);
 
     return newUser;
     
@@ -85,12 +90,12 @@ public class UserService {
 
     String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
     if (userByUsername != null && userByName != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+      throw new ResponseStatusException(HttpStatus.CONFLICT,
           String.format(baseErrorMessage, "username and the name", "are"));
     } else if (userByUsername != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
+      throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "username", "is"));
     } else if (userByName != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "name", "is"));
+      throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "name", "is"));
     }
   }
 
@@ -117,22 +122,12 @@ public class UserService {
     Optional<User> existingUser = userRepository.findById(user.getId());
 
     if (existingUser.isPresent()) {
-      User userToUpdate = existingUser.get();
-      userToUpdate.setUsername(user.getUsername());
-      userToUpdate.setBirthday(user.getBirthday());
-      System.out.println("User to update: " + userToUpdate.getId());
-      System.out.println("User to update: " + userToUpdate.getUsername());
-      System.out.println("User to update: " + userToUpdate.getBirthday());
-
-      // Update fields of userToUpdate with values from user
-      // For example, if User has a name field that can be updated:
-      // userToUpdate.setName(user.getName());
-
-      return userRepository.save(userToUpdate);
+      User updatedUser = existingUser.get();
+      updatedUser.setUsername(user.getUsername());
+      updatedUser.setBirthday(user.getBirthday());
+      return userRepository.save(updatedUser);
     } else {
-      // Handle case where user doesn't exist in the database
-      // You could throw an exception, return null, or return a default User object
-      return null;
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
     }
   }
 }

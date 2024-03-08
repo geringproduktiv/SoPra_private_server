@@ -22,9 +22,11 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,6 +70,7 @@ public class UserControllerTest {
         .andExpect(jsonPath("$[0].status", is(user.getStatus().toString())));
   }
 
+  // POST success
   @Test
   public void createUser_validInput_userCreated() throws Exception {
     // given
@@ -96,6 +99,126 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.name", is(user.getName())))
         .andExpect(jsonPath("$.username", is(user.getUsername())))
         .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
+  }
+
+  // POST failure
+  @Test
+  public void createUser_duplicateUsername_throwsException() throws Exception {
+    // given
+    User user = new User();
+    user.setName("Test User");
+    user.setUsername("testUsername");
+    user.setToken("1");
+    user.setStatus(UserStatus.ONLINE);
+
+    UserPostDTO userPostDTO = new UserPostDTO();
+    userPostDTO.setName("Test User");
+    userPostDTO.setUsername("testUsername");
+
+    given(userService.createUser(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.CONFLICT, "The username is already taken."));
+
+    // when/then -> do the request + validate the result
+    MockHttpServletRequestBuilder postRequest = post("/users")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(userPostDTO));
+
+    // then
+    mockMvc.perform(postRequest)
+        .andExpect(status().isConflict());
+  }
+  
+  // GET success
+  @Test
+  public void getUser_validInput_success() throws Exception {
+    // given
+    User user = new User();
+    user.setId(1L);
+    user.setName("Test User");
+    user.setUsername("testUsername");
+    user.setToken("1");
+    user.setStatus(UserStatus.ONLINE);
+
+    given(userService.getUser(Mockito.any())).willReturn(user);
+
+    // when/then -> do the request + validate the result
+    MockHttpServletRequestBuilder getRequest = get("/users/1")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    // then
+    mockMvc.perform(getRequest)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id", is(user.getId().intValue())))
+        .andExpect(jsonPath("$.name", is(user.getName())))
+        .andExpect(jsonPath("$.username", is(user.getUsername())))
+        .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
+  }
+
+  // GET failure
+  @Test
+  public void getUser_invalidInput_throwsException() throws Exception {
+    // given
+    given(userService.getUser(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The user does not exist."));
+
+    // when/then -> do the request + validate the result
+    MockHttpServletRequestBuilder getRequest = get("/users/1")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    // then
+    mockMvc.perform(getRequest)
+        .andExpect(status().isNotFound());
+  }
+
+  // PUT success
+  @Test
+  public void updateUser_validInput_success() throws Exception {
+    // given
+    User user = new User();
+    user.setId(1L);
+    user.setName("Test User");
+    user.setUsername("testUsername");
+    user.setToken("1");
+    user.setStatus(UserStatus.ONLINE);
+
+    UserPostDTO userPostDTO = new UserPostDTO();
+    userPostDTO.setName("Test User");
+    userPostDTO.setUsername("testUsername");
+
+    given(userService.updateUser(Mockito.any())).willReturn(user);
+
+    // when/then -> do the request + validate the result
+    MockHttpServletRequestBuilder putRequest = put("/users/1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(userPostDTO));
+
+    // then
+    mockMvc.perform(putRequest)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id", is(user.getId().intValue())))
+        .andExpect(jsonPath("$.name", is(user.getName())))
+        .andExpect(jsonPath("$.username", is(user.getUsername())))
+        .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
+  }
+
+  // PUT failure
+  @Test
+  public void updateUser_invalidInput_throwsException() throws Exception {
+    assertNull(userService.updateUser(Mockito.any()));
+    // given
+    UserPostDTO userPostDTO = new UserPostDTO();
+    userPostDTO.setName("name");
+    userPostDTO.setUsername("username");
+    userPostDTO.setId(1L);
+
+    given(userService.updateUser(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The user does not exist."));
+
+    // when/then -> do the request + validate the result
+    MockHttpServletRequestBuilder putRequest = put("/users/1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(userPostDTO));
+
+    // then
+    mockMvc.perform(putRequest)
+        .andExpect(status().isNotFound());
   }
 
   /**

@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2024-03-08T19:31:44" hostname="MacBook-Air-Lazi.local" time="1.575">
+<testsuite name="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2024-03-08T22:36:13" hostname="MacBook-Air-Lazi.local" time="0.235">
   <properties/>
-  <testcase name="createUser_validInputs_success()" classname="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" time="1.54"/>
-  <testcase name="createUser_duplicateName_throwsException()" classname="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" time="0.023"/>
-  <testcase name="createUser_duplicateInputs_throwsException()" classname="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" time="0.009"/>
-  <system-out><![CDATA[20:31:45.523 [Test worker] DEBUG ch.uzh.ifi.hase.soprafs24.service.UserService - Created Information for User: ch.uzh.ifi.hase.soprafs24.entity.User@2a47597
-20:31:45.592 [Test worker] DEBUG ch.uzh.ifi.hase.soprafs24.service.UserService - Created Information for User: ch.uzh.ifi.hase.soprafs24.entity.User@7e8279e5
-20:31:45.615 [Test worker] DEBUG ch.uzh.ifi.hase.soprafs24.service.UserService - Created Information for User: ch.uzh.ifi.hase.soprafs24.entity.User@7a2fce12
-]]></system-out>
+  <testcase name="createUser_validInputs_success()" classname="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" time="0.226"/>
+  <testcase name="createUser_duplicateName_throwsException()" classname="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" time="0.004"/>
+  <testcase name="createUser_duplicateInputs_throwsException()" classname="ch.uzh.ifi.hase.soprafs24.service.UserServiceTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
